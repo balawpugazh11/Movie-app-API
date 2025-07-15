@@ -5,6 +5,7 @@ const Home = () => {
   const [movies, setmovies] = useState([]);
   const [page, setpage] = useState(1);
   const [search, setsearch] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
   useEffect(() => {
     let url = `https://api.themoviedb.org/3/movie/popular?page=${page}&api_key=8ca3efc0124283b1ee02aec0b0a2974a`;
     if (search) {
@@ -15,11 +16,16 @@ const Home = () => {
       .then((data) => {
         if (Array.isArray(data.results)) {
           setmovies(data.results);
+          setTotalPages(data.total_pages || 1);
         } else {
           setmovies([]);
+          setTotalPages(1);
         }
       })
-      .catch(() => setmovies([]));
+      .catch(() => {
+        setmovies([]);
+        setTotalPages(1);
+      });
   }, [page ,search]);
 
   return (
@@ -45,21 +51,21 @@ const Home = () => {
           <div className="text-white col-span-full text-center">No movies found.</div>
         )}
       </div>
-      <div className="pagination-container flex justify-between mt-5 ">
+      <div className="flex justify-between items-center gap-4 mt-6">
         <button
-          disabled={page == 1}
-          className="p-2 bg-gray-700 text-white rounded"
-          onClick={() => {
-            setpage((prev) => prev - 1);
-          }}
+          onClick={() => setpage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 bg-blue-900 text-white rounded disabled:bg-gray-400"
         >
-          Previous
+          Prev
         </button>
+        <span className="text-blue-900">
+          Page {page} of {totalPages}
+        </span>
         <button
-          className="p-2 bg-gray-700 text-white rounded"
-          onClick={() => {
-            setpage((prev) => prev + 1);
-          }}
+          onClick={() => setpage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+          className="px-3 py-1 bg-blue-900 text-white rounded disabled:bg-gray-400"
         >
           Next
         </button>
